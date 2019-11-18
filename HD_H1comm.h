@@ -84,13 +84,6 @@ void H1_HandleData() {   // Handle incoming H1 data
         
        }
     
-// DETECT AND CORRECT MISSING FIRMWARE
-    else if  (incomingH1.substring(0,10)=="Bootloader") {//and g_startseq == START_INIT:
-         trace("H1 Booted","LOG LF SER");
-        // H1_Booted = true;
-      
-    }
-        
    
     else {
          
@@ -106,7 +99,6 @@ void H1_HandleData() {   // Handle incoming H1 data
 String H1_PrintVpModel()
 {
 String vpmod;
-//String t;
 
          if (H1_Type == "00")  vpmod = "Rego 600";
     else if (H1_Type == "05")  vpmod = "Rego 400";
@@ -119,33 +111,25 @@ String vpmod;
     else if (H1_Type == "70")  vpmod = "Thermia Villa";
     else return "Not initialized";
   
-  //t = vpmod + ", Firmware: " + H1_Type+H1_Ver; //trace (t,"SER LOG LF");    
   return vpmod + ", Firmware: " + H1_Type+H1_Ver; //trace (t,"SER LOG LF");    
 
   //return t;
 
 }
 //-------------------------------------------------------------------------------------------------
-void H1_Recv() {     // Data mottages frÃ¥n H1 Interface
+void H1_Recv() {     // Data from H1 controller
 
   
   static byte ndx = 0;
   char endMarker = '\r';
   char rc;
   
-  #ifdef simulator
-    return;
-  #endif
   
   while (H1.available() > 0 && new_H1_data == false) {
     rc = H1.read();
-    
-    //if (H1_FlashMode) { if (receivedCharsH1.endsWith("Bootloader..")) {H1_Booted = true; Serial.print ("+");} }
-//    if (H1_FlashMode) {  if (receivedCharsH1.indexOf("Bootloader..")) {Serial.print (receivedCharsH1);receivedCharsH1="";H1_Booted = true;} }
-
-  
+   
     if (rc != endMarker) {
-      
+  
       receivedCharsH1 += rc;
       
       ndx++;
@@ -168,8 +152,7 @@ void H1_Recv() {     // Data mottages frÃ¥n H1 Interface
       receivedCharsH1="";
     }
     
-    
-    
+      
     yield();
   }
   //}
@@ -177,7 +160,7 @@ void H1_Recv() {     // Data mottages frÃ¥n H1 Interface
 
 //--------------------------------------------------------------------------------------------------------
 
-void H1_hp_set(String idx, int value)
+void H1_hp_set(String idx, int value) // Set parameter in Heat pump
 {
   char v_hex[10];
   String s;
@@ -193,7 +176,6 @@ void H1_hp_set(String idx, int value)
   
 }
 //-------------------------------------------------------------------------------------------------
-
 
 String H1_unit_value (char idx)
 
@@ -229,9 +211,7 @@ String H1_format_value (char idx, char type)
 {
  char z[2];
  char *endptr;
- //String valprint;
  String val;
- 
  float v;
  int i;
  int unit;

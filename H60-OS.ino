@@ -17,7 +17,6 @@
 #include <ESP8266HTTPClient.h>  // Web Client
 #include <SoftwareSerial.h>     // Serial port for H1
 #include <ArduinoJson.h>        // Json parser support
-#include <FS.h>                 // SPIFFS SPI-Flash Filsystem, Used for Webserver
 #include "HD_Globals.h"         
 SoftwareSerial H1(13, 12, false, 1024);  // Init software serial  Pin 13, 12, non inv, buff for H1 H60
 os_timer_t myTimer;                      // Init soft interrupt timer
@@ -31,7 +30,6 @@ void setup() { // H60 Boot sequence
   
   pinMode(LED, OUTPUT);       // Initialize the LED_BUILTIN pin as an output
   digitalWrite(LED, LOW);     // LED Status: ON: Init | Quick-blink: WifiOK, No Online | One-sec-blink: All OK
-  SPIFFS.begin();             // Initialize filesystem för Config, FW och Web buffering
   Serial.begin(115200);       // Debug serial usb setup
   H1.begin(19200);            // H1 soft serial setup
   
@@ -96,13 +94,13 @@ void timerCallback(void *pArg) {  // Every second
   if (digitalRead(D2) == LOW) { // Read button press
          B1_Count++; // Button 1
          B1_Pushed=true;
-          Serial.println("Button Pushed " + String(B1_Count) + " sec");
+         Serial.println("Button Pushed " + String(B1_Count) + " sec");
      
         }
     else
         { // Button release
-          //if (B1_Pushed && B1_Count == 1) { flash_ip=true; } // telegrafera ip sista tecken om touchar knapp
-          //if (B1_Count >5 ) { config("CFG WIFI_SSID=");config("CFG DHCP_ENAB=0");config("CFG WEB_ENABLED=1");config("CFG HD_ONLINE=1"); } // Default inst
+          
+          //if (B1_Count >5 ) {}  // Button 5 sek
           B1_Count=0;
           B1_Pushed = false;
         }
@@ -123,36 +121,25 @@ void loop() {
   FlashLed();
                            
   // ======= Every SEK ========
-  
-  if (onesec){
-        
-        onesec=0;
+  if (onesec){ onesec=false;  }
       
-        
-  }
   
-
-  
-  // ======= VARJE MINUT ========
-  if (onemin){ // Kör varje ny minut utanför timer rutin då den krashar annars.
+  // ======= EVERY MINUTE ========
+  if (onemin){ 
    
-    if (WiFi.status() == 3) state_Wifi=true; else state_Wifi=false; // Check Wifi status 3 = ok, 0/1/6=fault
-      
-   uptime++;
-   mincount=0;
-   onemin=false; 
+      if (WiFi.status() == 3) state_Wifi=true; else state_Wifi=false; // Check Wifi status 3 = ok, 0/1/6=fault
+      uptime++;
+      mincount=0;
+      onemin=false; 
    }
    
-  // ======= VAR 5e SEKUND ========
-   if (every5seconds)  {  // Kör var 10:e sekund
-        //Serial.print("+");
+  // ======= EVERY 5th SECOND ========
+   if (every5seconds)  {  
         every5seconds=0;
         secondsCount=0;
         H1_CommInit(0);
-       
-
             
-   }
+       }
  
 }
   

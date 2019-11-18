@@ -1,10 +1,8 @@
 ESP8266WebServer *server;
 
 void H1_hp_set(String idx, int value);
-void spif_web();
 void handleNotFound();
 void ApiAllData();
-void AllData(bool homey);
 void ApiSet();
 
 const String title = "<!DOCTYPE html><html><head><title>";
@@ -30,8 +28,6 @@ const String footer = "<br><br>(C) 2019 Arandis AB  Husdata.se\
   
 //---------------------------------------------------------------------------------------------------------------
 
-
-
 void pageRoot() {
   
   String buff,typ;
@@ -40,22 +36,17 @@ void pageRoot() {
   byte i;
   int ID=99;
   float v;
-  
-    File f = SPIFFS.open("/webpage.html", "w");
-    f.print(title + "H60" + header);
-    buff = "<br><form action='/' method='post' autocomplete='off'>\
+      
+    buff =  title + "H60" + header;
+    buff += "<br><form action='/' method='post' autocomplete='off'>\
     <table width=100% border=0 cellspacing=0 cellpadding=4>\
              <tr  bgcolor=#133670><td width=40><font color='white'><b>&nbsp;Status</td><td width=40><font color='white'></td></tr>\
              <tr><td>&nbsp;IP Address</td><td>" + String(g_wifi_ip) + "</td></tr>\
              <tr><td>&nbsp;Mac Address</td><td>" +  String(g_wifi_mac) + "</td></tr>\
              <tr><td>&nbsp;Signal strength</td><td>" + String(g_wifi_rssi) + "</td></tr>\
              <tr><td>&nbsp;Interface cable</td><td>" + H1_PrintVpModel() + "</td></tr>";
-             
-                                               
+                                              
      buff+="</table>";
-     f.print(buff);  
-     buff="";   
-     
      
      if(server->args()>0) // Any arguments
      {
@@ -88,13 +79,13 @@ void pageRoot() {
                             else   
                         
                         buff += "<br>Setting value has too few characters!<br>";
-                        f.print(buff);
+                    //    f.print(buff);
                   }   
      }           
                     
 
      
-     buff="<br>\
+     buff+="<br>\
      <table width=100% cellspacing=0 cellpadding=4 border = 0>\
              <tr bgcolor=#133670>\
                 <td width=20%><font color='white'><b>&nbsp;Idx</td>";
@@ -102,7 +93,7 @@ void pageRoot() {
      buff +=   "<td width=40%><font color='white'><b>Name</td>\
                 <td width=30%><font color='white'><b>Value</td>\
             </tr>";
-     f.print(buff);       
+
 
   
   for (i=0;i<indexNo;i++)
@@ -115,12 +106,12 @@ void pageRoot() {
       {
        
        if (col)  {bgcolor="b3b3b3";col=false;} else {bgcolor="c5c5c5";col=true;}
-       buff = "<tr bgcolor='#" + bgcolor + "'><td>&nbsp;<a href='?id=" + String(i) + "'><span class='setting'>" + String(H1_ID[i]) + "</span></a></td>";   //SETTABLE
+       buff += "<tr bgcolor='#" + bgcolor + "'><td>&nbsp;<a href='?id=" + String(i) + "'><span class='setting'>" + String(H1_ID[i]) + "</span></a></td>";   //SETTABLE
       } 
      else
       { // if NOT a setting
        if (col)  {bgcolor="eeeeee";col=false;} else {bgcolor="FFFFFF";col=true;}
-       buff = "<tr bgcolor='#" + bgcolor + "'><td>&nbsp;" + String(H1_ID[i])    + "</td>";   // NON Settable
+       buff += "<tr bgcolor='#" + bgcolor + "'><td>&nbsp;" + String(H1_ID[i])    + "</td>";   // NON Settable
       }
       
  
@@ -133,33 +124,17 @@ void pageRoot() {
 
    
    buff += "</tr>";
-   f.print(buff);       
+  
    }
   }
-   buff = "</table></form>";
+   buff += "</table></form>";
    
-   f.print(buff + footer);
-   f.close();
-   spif_web();       
-   
-  //server->send(200, "text/html", title + setting[NAME] + header+menu+buff+footer);
+ server->send(200, "text/html", buff+footer);
   
  rssi_update(); 
 }
 
-//---------------------------------------------------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------------------------------
-void spif_web(){ // Stream SPIFFS html file 
-
-    File dataFile = SPIFFS.open("/webpage.html", "r");
-    server->streamFile(dataFile, "text/html");
-    dataFile.close();
- }
 
 //----------------------------------------------------------------------------------------------
 
@@ -181,15 +156,12 @@ void handleNotFound() {
 //----------------------------------------------------------------------------------------------
 
 void setup_webserver(void) {
-  /* if (MDNS.begin("esp8266")) {
-    Serial.println("MDNS responder started");
-  } */
 
   server = new ESP8266WebServer(80);
 
   server->on("/", pageRoot);
-  server->on("/api/alldata", ApiAllData);  // API Setting to 1 for read enable
-  server->on("/api/set", ApiSet);          // API Setting to 2 for write enable
+  server->on("/api/alldata", ApiAllData); 
+  server->on("/api/set", ApiSet);         
   server->onNotFound(handleNotFound);
   server->begin();
   trace("HTTP server started ", "SER LOG LF");
@@ -198,24 +170,18 @@ void setup_webserver(void) {
 }
 
 
-
-
 //----------------------------------------------------------------------------------------------
 
-
-void ApiAllData()      {AllData(false);} // Read all registers in JSON 
-
-void AllData(bool homey) { // Read all registers in JSON format
+void ApiAllData() { // Read all registers in JSON format
   String buff;
   byte i;
   //{"0001":238,"0002":459,"0003":167,"0004":426,"0005":26,"0006":43,"0007":8,"0008":133,"0009":356,"000A":388,"000B":310,"3104":472,"0107":364,"0111":278,"0203":204,"2204":36,"2205":230,"0207":441,"0208":229,"7209":214,"1A01":1,"1A02":0,"1A03":0,"1A04":1,"1A05":0,"1A06":1,"1A07":1,"1A20":0}
-   // API Setting has to be 1 or larger
+   
    buff = "{";
    for (i=0;i<indexNo;i++)
    {
         if (i!=0) buff += ",";
         buff += String(char(34));  
-        if (homey) buff += "X";
         buff += String(H1_ID[i]) + String(char(34));
         buff += ":";
         buff += String(H1_ValueNow[i]);

@@ -1,4 +1,4 @@
-// Prototyper -------------
+// Prototypes -------------
 String H1_format_value (char idx, char type);
 String H1_unit_value (char idx);
 byte H1_IDXtoID (String idx);
@@ -31,7 +31,6 @@ char g_wifi_rssi[20] = "";
 char g_wifi_ip[20];
 char g_wifi_mac[20];
 
-String restart_reason = "unknown";
 
 // H1 comm related
 String H1_Ver="";
@@ -52,5 +51,3 @@ bool state_H1Comm=0;
 bool state_HPComm=0;
 bool state_XL_ListRead = false;
 bool state_Indexes_Received=0;
-//bool state_Startuplog_Sent=0;   // Vid uppstart skickas en log efter 1 min, detta gÃ¶rs bara en gÃ¥ng
-//bool state_SupportServer = false;
